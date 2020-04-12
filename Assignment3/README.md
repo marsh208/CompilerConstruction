@@ -1,3 +1,7 @@
+Files that already pass:
+-do_nothing.cc
+-void_return_empty.cc
+
 Already Implemented Typechecking Rules:
 -Stm
   -SExp
