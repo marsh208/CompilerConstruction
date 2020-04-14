@@ -118,6 +118,8 @@ checkStm env (SDecls ty' ids) ty =
 checkStm env (SReturn e) ty = do
     checkExp env e ty
     return env
+checkStm env (SReturnVoid) ty =
+    return env
 checkStm env (SInit ty' id e) ty = do
     insertVar env id ty'
 {-
