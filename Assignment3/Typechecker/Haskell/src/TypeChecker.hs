@@ -115,13 +115,18 @@ checkStm env (SExp e) ty = do
     return env
 checkStm env (SDecls ty' ids) ty =
     foldM (\e i -> insertVar e i ty') env ids
+checkStm env (SInit ty' id e) ty = do
+    insertVar env id ty'
 checkStm env (SReturn e) ty = do
     checkExp env e ty
     return env
 checkStm env (SReturnVoid) ty =
     return env
-checkStm env (SInit ty' id e) ty = do
-    insertVar env id ty'
+checkStm env (SWhile e stms) ty = do
+    checkExp env e Type_bool
+    checkStm env stms ty
+    return env
+
 {-
 Here need to go the missing cases. Once you have all cases you can delete the next line which is only needed to catch all cases that are not yet implemented.
 -}
