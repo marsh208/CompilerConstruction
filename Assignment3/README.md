@@ -18,3 +18,27 @@ Rule Implemented for easy_add.cc:
 
 Rule Implemented for ass_easy.cc:
 -SInit
+
+
+Still to be Implemented...
+-Stm
+  -SWhile
+  -SBlock
+  -SIfElse
+-Exp
+  -ETrue
+  -EFalse
+  -EId
+  -EApp
+  -EPIncr-- postincrement
+  -EPDecr
+  -EIncr -- preincrement
+  -EDecr
+  -ELt
+  -EGt
+  -ELtEq
+  -EGtEq
+  -EEq
+  -ENEq
+  -EAnd
+  -EOr
