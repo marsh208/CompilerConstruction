@@ -1,0 +1,6 @@
+[submodule "/Assignment2/CC2020_Assignment-2"] 
+  path = path_to_submodule
+  url = git://https://github.com/marsh208/CC2020_Assignment-2
+[submodule "Assignment2-2"]
+	path = Assignment2-2
+	url = https://github.com/marsh208/CC2020_Assignment-2

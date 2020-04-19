@@ -137,6 +137,10 @@ inferTypeExp :: Env -> Exp -> Err Type
 inferTypeExp env (EInt _) = return Type_int
 inferTypeExp env (EDouble _) = return Type_double
 inferTypeExp env (EString _) = return Type_string
+inferTypeExp env (EApp id exps) = do
+    funcSig <- lookupFun env id
+    forM_ (zip exps (fst funcSig)) (\p -> checkExp env (fst p) (snd p))
+    return (snd funcSig)
 inferTypeExp env (ETimes e1 e2) =
     inferTypeOverloadedExp env (Alternative [Type_int,Type_double]) e1 [e2]
 inferTypeExp env (EDiv e1 e2) =
@@ -153,6 +157,7 @@ inferTypeExp env (ETyped e ty) = do
     checkExp env e ty
     return ty
 {-
+fst and snd - used to extract element of a pair
 Here need to go the missing cases. Once you have all cases you can delete the next line which is only needed to catch all cases that are not yet implemented.
 -}
 inferTypeExp _ e = fail $ "Missing case in inferTypeExp encountered:\n" ++ printTree e
