@@ -122,10 +122,21 @@ checkStm env (SReturn e) ty = do
     return env
 checkStm env (SReturnVoid) ty =
     return env
-checkStm env (SWhile e stms) ty = do
+checkStm env (SWhile e stm) ty = do
     checkExp env e Type_bool
-    checkStm env stms ty
+    checkStm env stm ty
     return env
+checkStm env (SBlock stms) ty = do
+    forM_ stms $ \stm -> do
+        checkStm env stm ty
+    return env
+checkStm env (SIfElse e stm1 stm2) ty = do
+    checkExp env e Type_bool
+    checkStm env stm1 ty
+    checkStm env stm2 ty
+    return env
+
+
 {-
 Here need to go the missing cases. Once you have all cases you can delete the next line which is only needed to catch all cases that are not yet implemented.
 -}
@@ -141,20 +152,21 @@ inferTypeExp env (EApp id exps) = do
     forM_ (zip exps (fst funcSig)) (\p -> checkExp env (fst p) (snd p))
     return (snd funcSig)
 inferTypeExp env (ETimes e1 e2) = do
-    ty <- inferTypeOverloadedExp env (Alternative [Type_int,Type_double]) e1 [e2]
-    return ty
+    inferTypeOverloadedExp env (Alternative [Type_int,Type_double]) e1 [e2]
 inferTypeExp env (EDiv e1 e2) = do
-    ty <- inferTypeOverloadedExp env (Alternative [Type_int,Type_double]) e1 [e2]
-    return ty
+    inferTypeOverloadedExp env (Alternative [Type_int,Type_double]) e1 [e2]
 inferTypeExp env (EPlus e1 e2) = do
-    ty <- inferTypeOverloadedExp env (Alternative [Type_int,Type_double]) e1 [e2]
-    return ty
+    inferTypeOverloadedExp env (Alternative [Type_int,Type_double]) e1 [e2]
 inferTypeExp env (EMinus e1 e2) = do
-    ty <- inferTypeOverloadedExp env (Alternative [Type_int,Type_double]) e1 [e2]
-    return ty
+    inferTypeOverloadedExp env (Alternative [Type_int,Type_double]) e1 [e2]
 inferTypeExp env (ELt e1 e2) = do
-    ty <- inferTypeOverloadedExp env (Alternative [Type_int,Type_double]) e1 [e2]
-    return ty
+    inferTypeOverloadedExp env (Alternative [Type_int,Type_double]) e1 [e2]
+inferTypeExp env (EGt e1 e2) = do
+    inferTypeOverloadedExp env (Alternative [Type_int,Type_double]) e1 [e2]
+inferTypeExp env (ELtEq e1 e2) = do
+    inferTypeOverloadedExp env (Alternative [Type_int,Type_double]) e1 [e2]
+inferTypeExp env (EGtEq e1 e2) = do
+    inferTypeOverloadedExp env (Alternative [Type_int,Type_double]) e1 [e2]
 inferTypeExp env (EAss e1 e2) = do
     ty <- inferTypeExp env e1
     checkExp env e2 ty
@@ -162,6 +174,7 @@ inferTypeExp env (EAss e1 e2) = do
 inferTypeExp env (ETyped e ty) = do
     checkExp env e ty
     return ty
+
 {-
 fst and snd - used to extract element of a pair
 Here need to go the missing cases. Once you have all cases you can delete the next line which is only needed to catch all cases that are not yet implemented.

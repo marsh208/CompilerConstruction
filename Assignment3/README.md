@@ -29,7 +29,6 @@ Still to be Implemented...
   -ETrue
   -EFalse
   -EId
-  -EApp
   -EPIncr-- postincrement
   -EPDecr
   -EIncr -- preincrement
