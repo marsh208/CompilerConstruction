@@ -162,9 +162,11 @@ evalStm (SExp e) = do
 evalStm (SDecls _ ids) = do
     mapM (\i -> extendContext i VUndefined) ids
     return Nothing
+
 {-
 evalStm (SInit _ i e) =
 -}
+
 evalStm SReturnVoid = return VVoid
 
 evalStm (SReturn e) = do
