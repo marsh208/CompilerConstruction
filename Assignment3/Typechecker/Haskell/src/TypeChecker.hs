@@ -116,24 +116,25 @@ checkStm env (SExp e) ty = do
 checkStm env (SDecls ty' ids) ty =
     foldM (\e i -> insertVar e i ty') env ids
 checkStm env (SInit ty' id e) ty = do
-    insertVar env id ty'
+    env' <- insertVar env id ty'
+    checkExp env' e ty'
+    return env'
 checkStm env (SReturn e) ty = do
     checkExp env e ty
     return env
 checkStm env (SReturnVoid) ty =
     return env
-checkStm env (SWhile e stm) ty = do
+checkStm env (SWhile e s) ty = do
     checkExp env e Type_bool
-    checkStm env stm ty
+    foldM(\e s -> checkStm e s ty) (newBlock env) [s]
     return env
 checkStm env (SBlock stms) ty = do
-    forM_ stms $ \stm -> do
-        checkStm env stm ty
+    foldM (\e s -> checkStm e s ty) (newBlock env) stms
     return env
-checkStm env (SIfElse e stm1 stm2) ty = do
+checkStm env (SIfElse e s1 s2) ty = do
     checkExp env e Type_bool
-    checkStm env stm1 ty
-    checkStm env stm2 ty
+    foldM(\e s -> checkStm e s ty) (newBlock env) [s1]
+    foldM(\e s -> checkStm e s ty) (newBlock env) [s2]
     return env
 
 
@@ -147,10 +148,16 @@ inferTypeExp :: Env -> Exp -> Err Type
 inferTypeExp env (EInt _) = return Type_int
 inferTypeExp env (EDouble _) = return Type_double
 inferTypeExp env (EString _) = return Type_string
+inferTypeExp env (ETrue) = return Type_bool
+inferTypeExp env (EFalse) = return Type_bool
 inferTypeExp env (EApp id exps) = do
     funcSig <- lookupFun env id
-    forM_ (zip exps (fst funcSig)) (\p -> checkExp env (fst p) (snd p))
+    if (length (fst funcSig) /= (length exps)) then fail "Incorrect number of arguments"
+    else do forM_ (zip exps (fst funcSig)) (\p -> checkExp  env (fst p) (snd p))
     return (snd funcSig)
+inferTypeExp env (EId id) = do
+    ty <- lookupVar id env
+    return ty
 inferTypeExp env (ETimes e1 e2) = do
     inferTypeOverloadedExp env (Alternative [Type_int,Type_double]) e1 [e2]
 inferTypeExp env (EDiv e1 e2) = do
@@ -159,14 +166,7 @@ inferTypeExp env (EPlus e1 e2) = do
     inferTypeOverloadedExp env (Alternative [Type_int,Type_double]) e1 [e2]
 inferTypeExp env (EMinus e1 e2) = do
     inferTypeOverloadedExp env (Alternative [Type_int,Type_double]) e1 [e2]
-inferTypeExp env (ELt e1 e2) = do
-    inferTypeOverloadedExp env (Alternative [Type_int,Type_double]) e1 [e2]
-inferTypeExp env (EGt e1 e2) = do
-    inferTypeOverloadedExp env (Alternative [Type_int,Type_double]) e1 [e2]
-inferTypeExp env (ELtEq e1 e2) = do
-    inferTypeOverloadedExp env (Alternative [Type_int,Type_double]) e1 [e2]
-inferTypeExp env (EGtEq e1 e2) = do
-    inferTypeOverloadedExp env (Alternative [Type_int,Type_double]) e1 [e2]
+
 inferTypeExp env (EAss e1 e2) = do
     ty <- inferTypeExp env e1
     checkExp env e2 ty
@@ -174,6 +174,56 @@ inferTypeExp env (EAss e1 e2) = do
 inferTypeExp env (ETyped e ty) = do
     checkExp env e ty
     return ty
+
+inferTypeExp env (EPIncr e) =
+    inferTypeOverloadedExp env (Alternative [Type_int,Type_double]) e []
+inferTypeExp env (EIncr e) =
+    inferTypeOverloadedExp env (Alternative [Type_int,Type_double]) e []
+inferTypeExp env (EPDecr e) =
+    inferTypeOverloadedExp env (Alternative [Type_int,Type_double]) e []
+inferTypeExp env (EDecr e) =
+    inferTypeOverloadedExp env (Alternative [Type_int,Type_double]) e []
+inferTypeExp env (EApp id exps) = do
+    funcSig <- lookupFun env id
+    if (length (fst funcSig) /= (length exps)) then fail "Incorrect number of arguments"
+    else do forM_ (zip exps (fst funcSig)) (\p -> checkExp  env (fst p) (snd p))
+    return (snd funcSig)
+inferTypeExp env (EEq e1 e2) = do
+    ty <- inferTypeExp env e1
+    checkExp env e2 ty
+    return Type_bool
+inferTypeExp env (ENEq e1 e2) = do
+    ty <- inferTypeExp env e1
+    checkExp env e2 ty
+    return Type_bool
+inferTypeExp env (ELt e1 e2) = do
+    if (e1 == ETrue || e1 == EFalse ||e2 == ETrue || e2 == EFalse) then fail "No True/False in comparison statements.\n"
+    else do
+        ty <- inferTypeExp env e1
+        checkExp env e2 ty
+        return Type_bool
+inferTypeExp env (EGt e1 e2) = do
+    if (e1 == ETrue || e1 == EFalse ||e2 == ETrue || e2 == EFalse) then fail "No True/False in comparison statements.\n"
+    else do
+        ty <- inferTypeExp env e1
+        checkExp env e2 ty
+        return Type_bool
+inferTypeExp env (ELtEq e1 e2) = do
+    ty <- inferTypeExp env e1
+    checkExp env e2 ty
+    return Type_bool
+inferTypeExp env (EGtEq e1 e2) = do
+    ty <- inferTypeExp env e1
+    checkExp env e2 ty
+    return Type_bool
+inferTypeExp env (EAnd e1 e2) = do
+    ty <- inferTypeExp env e1
+    checkExp env e2 Type_bool
+    return Type_bool
+inferTypeExp env (EOr e1 e2) = do
+    ty <- inferTypeExp env e1
+    checkExp env e2 Type_bool
+    return Type_bool
 
 {-
 fst and snd - used to extract element of a pair
