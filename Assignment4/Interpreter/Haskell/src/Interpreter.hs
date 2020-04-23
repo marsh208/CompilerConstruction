@@ -164,8 +164,9 @@ evalStm (SDecls _ ids) = do
     return Nothing
 {-
 evalStm (SInit _ i e) =
-evalStm SReturnVoid =
 -}
+evalStm SReturnVoid = return VVoid
+
 evalStm (SReturn e) = do
     v <- evalExp e
     return $ Just v
@@ -180,12 +181,15 @@ evalStm stm =
 
 evalExp :: Interpreter i => Exp -> i Value
 evalExp ETrue = return VTrue
+evalExp EFalse = return VFalse
+
 {-
-evalExp EFalse =
 -}
 evalExp (EInt i) = return $ VInt i
+evalExp (EDouble d) = return $ VDouble d
+
+
 {-
-evalExp (EDouble d) =
 evalExp (EString _) =
 evalExp (EId i) =
 -}
@@ -226,19 +230,21 @@ evalExp (EPIncr e@(EId i)) = do
     updateContext i val'
     return val
 evalExp (EPIncr e) = fail $ "Expected " ++ printTree e ++ " to be an id."
+
 evalExp (EPDecr e@(EId i)) =
     val <- evalExp e
     val' <- subValue val (VInt 1)
     updateContext i val'
     return val
 evalExp (EPDecr e) = fail $ "Expected " ++ printTree e ++ " to be an id."
-{-
 
+{-
 evalExp (EIncr e@(EId i)) =
 evalExp (EIncr e) =
 evalExp (EDecr e@(EId i)) =
 evalExp (EDecr e) =
 -}
+
 evalExp (ETimes e1 e2) = applyFun mulValue e1 e2
 evalExp (EPlus e1 e2)  = applyFun addValue e1 e2
 evalExp (EDiv e1 e2)   = applyFun divValue e1 e2
