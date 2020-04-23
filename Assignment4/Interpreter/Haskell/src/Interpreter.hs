@@ -172,19 +172,18 @@ evalStm (SReturn e) = do
     return $ Just v
 
 evalStm (SBlock stms) = pushPop $ evalStms stms
+
 {-
 evalStm (SWhile e stm) =
 evalStm (SIfElse e stm1 stm2) =
 -}
+
 evalStm stm =
     fail $ "Missing case in evalStm " ++ printTree stm ++ "\n"
 
 evalExp :: Interpreter i => Exp -> i Value
 evalExp ETrue = return VTrue
 evalExp EFalse = return VFalse
-
-{-
--}
 evalExp (EInt i) = return $ VInt i
 evalExp (EDouble d) = return $ VDouble d
 
@@ -193,6 +192,7 @@ evalExp (EDouble d) = return $ VDouble d
 evalExp (EString _) =
 evalExp (EId i) =
 -}
+
 evalExp (EApp i exps) = do
     vals <- mapM evalExp exps
     case (i, vals) of
@@ -238,21 +238,29 @@ evalExp (EPDecr e@(EId i)) =
     return val
 evalExp (EPDecr e) = fail $ "Expected " ++ printTree e ++ " to be an id."
 
-{-
+
 evalExp (EIncr e@(EId i)) =
-evalExp (EIncr e) =
+    val <- evalExp e
+    val' <- addValue val (VInt 1)
+    updateContext i val'
+    return val'
+evalExp (EIncr e) = fail $ "Expected " ++ printTree e ++ " to be an id."
+
 evalExp (EDecr e@(EId i)) =
-evalExp (EDecr e) =
--}
+    val <- evalExp e
+    val' <- subValue val (VInt 1)
+    updateContext i val'
+    return val'
+evalExp (EDecr e) = fail $ "Expected " ++ printTree e ++ " to be an id."
 
 evalExp (ETimes e1 e2) = applyFun mulValue e1 e2
 evalExp (EPlus e1 e2)  = applyFun addValue e1 e2
 evalExp (EDiv e1 e2)   = applyFun divValue e1 e2
 evalExp (EMinus e1 e2) = applyFun subValue e1 e2
+evalExp (ELt e1 e2)    = applyFun ltValue e1 e2
+evalExp (EGt e1 e2)    = applyFun gtValue e1 e2
 
 {-
-evalExp (ELt e1 e2)    =
-evalExp (EGt e1 e2)    =
 evalExp (ELtEq e1 e2)  =
 evalExp (EGtEq e1 e2)  =
 evalExp (EEq e1 e2)    =
