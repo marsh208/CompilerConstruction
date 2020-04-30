@@ -18,6 +18,10 @@
     i32.add
     (local.set $iy$0)
     (local.get $iy$0)
+    (call $printInt)
+    (local.get $ix$0)
+    (call $printInt)
+    (i32.const 0)
     return
   )
   (export "main" (func $main))
