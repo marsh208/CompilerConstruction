@@ -13,11 +13,11 @@ SCons.       Sect ::= [Cons];
 SExps.       Sect ::= Exp;
 
 Cons.        Cons ::= Id;
-SAssign.     Stm ::= Cons "::" Tpe Id ";";
+SAssign.     Stm ::= Cons "::" Type Id ";";
 
 SExp.        Stm ::= Exp ";" ;
 SDecls.      Stm ::= Type [Id] ";" ;
-SInit.       Stm ::= Tpe Id "=" Exp ";" ;
+SInit.       Stm ::= Type Id "=" Exp ";" ;
 SReturn.     Stm ::= "return" Exp ";" ;
 SBlock.      Stm ::= "{" [Stm] "}" ;
 SWhile.      Stm ::= "while" "(" Exp ")" Stm ;
